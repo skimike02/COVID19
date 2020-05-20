@@ -15,7 +15,7 @@ import numpy as np
 
 state='CA'
 counties=['Sacramento','El Dorado','Placer','Yolo']
-fileloc=r'C:\Users\Micha\Desktop\Load'
+fileloc=r'C:\\Users\Micha\Documents\GitHub\COVID19'
 
 #Tests and National Stats
 url='https://covidtracking.com/api/v1/states/daily.json'
@@ -185,15 +185,20 @@ ca['hospitalized_confirmed_nonICU']=ca['COVID-19 Positive Patients']-ca['ICU COV
 ca['hospitalized_suspected_nonICU']=ca['Suspected COVID-19 Positive Patients']-ca['ICU COVID-19 Suspected Patients']
 y=[ca['hospitalized_confirmed_nonICU'],ca['hospitalized_suspected_nonICU'],ca['ICU COVID-19 Positive Patients'],ca['ICU COVID-19 Suspected Patients'],]
 
-plt.stackplot(ca.index,y, labels=['hospitalized confirmed','hospitalized suspected','ICU confirmed','ICU suspected'])
-plt.legend(loc="lower left")
-plt.title('CA Hospitalization Usage', size=22)
-plt.savefig("ca_hospitalization.png")
+fig, ax = plt.subplots()
+ax.stackplot(ca.index,y, labels=['hospitalized confirmed','hospitalized suspected','ICU confirmed','ICU suspected'])
+ax.legend(loc="lower left")
+ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
+ax.set_title('CA Hospitalization Usage through '+ca.index.max().strftime('%Y-%m-%d'), size=22)
+fig.autofmt_xdate(rotation=90)
+fig.set_size_inches(11, 8.5)
+
+fig.savefig("ca_hospitalization.png")
 plt.show()
 
 
 #%%
-shp=fileloc+'\counties\cb_2018_us_county_500k.shp'
+shp=fileloc+'\Counties\cb_2018_us_county_500k.shp'
 
 map_df = gpd.read_file(shp)
 df2.sort_values(by=['County Name','Date'],inplace=True)
