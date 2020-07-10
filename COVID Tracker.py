@@ -28,13 +28,15 @@ df=df[df['Date']>='2020-03-15']
 
 def rolling_7_avg(df,date,group,field):
     newname=field+'_avg'
+    df.sort_values(by=[group,date],inplace=True)
     df2=df.sort_values(by=[group,date]).assign(newname=df.groupby([group], as_index=False)[[field]].rolling(7,min_periods=7).mean().reset_index(0, drop=True))
     return df2.rename(columns={"newname": newname})
 
-fields=['positiveIncrease','totalTestResultsIncrease','deathIncrease']
+fields=['totalTestResultsIncrease','deathIncrease','positiveIncrease']
 
 for field in fields:
     df=rolling_7_avg(df,'Date','state',field)
+
 
 
 #CA and County Stats
@@ -96,8 +98,10 @@ caData['ICU_usage']=caData['ICU']/caData['ICU_capacity']*100
 caData['hospital_usage']=caData['hospitalized']/caData['hospital_capacity']*100
 caData.sort_values(by=['county','Date'],inplace=True)
 mask=~(caData.county.shift(1)==caData.county)
-caData['positiveIncrease']=caData['newcountconfirmed']
-caData['deathIncrease']=caData['newcountdeaths']
+caData['positiveIncrease']=caData['newcountconfirmed'].clip(0)
+caData['deathIncrease']=caData['newcountdeaths'].clip(0)
+caData['noncovid_icu']=caData.ICU_capacity-caData.ICU-caData.icu_available_beds
+
 fields=['positiveIncrease','deathIncrease']
 
 for field in fields:
@@ -175,7 +179,7 @@ fig, axs = plt.subplots(1,len(regions))
 y=100*df.groupby(['Date']).sum()['positiveIncrease'].rolling(7).mean()/df.groupby(['Date']).sum()['totalTestResultsIncrease'].rolling(7).mean()
 x=df.Date.sort_values().unique()
 axs[0].plot(x, y, label='7-day avg')
-axs[0].set(ylabel='Positivity')
+axs[0].set(ylabel='Positivity (7-day average)')
 axs[0].set_ylim(0,30)
 axs[0].set_title('US')
 
@@ -313,9 +317,9 @@ caData=rolling_metric('14_day_deaths','totalcountdeaths',caData)
 caData['daily deaths/100k (14-day avg)']=caData['14_day_deaths']/caData['pop']/14*100000
 caData=rolling_metric('14_day_cases','totalcountconfirmed',caData)
 caData['daily cases/100k (14-day avg)']=caData['14_day_cases']/caData['pop']/14*100000
-caData['i']=(caData.Date-caData.Date.min()).dt.days-14
+caData['i']=(caData.Date-caData[caData.Date>='2020-04-20'].Date.min()).dt.days
 
-data=(('daily cases/100k (14-day avg)',1/14,5,'Reds','Daily cases/100k (14-day avg)'),
+data=(('daily cases/100k (14-day avg)',0,5,'Reds','Daily cases/100k (14-day avg)'),
       ('daily deaths/100k (14-day avg)',0,0.3,'Reds','Daily deaths/100k (14-day avg)'),
       ('ICU_usage',0,30,'Reds','% ICU usage'),
       ('hospital_usage',0,30,'Reds','% Hospital Usage'))
