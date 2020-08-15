@@ -11,8 +11,6 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.animation import PillowWriter    
 import geopandas as gpd
 import numpy as np
-from bs4 import BeautifulSoup as bs
-import requests as r
 import math
 
 state='CA'
@@ -34,13 +32,14 @@ def rolling_7_avg(df,date,group,field):
 
 fields=['totalTestResultsIncrease','deathIncrease','positiveIncrease']
 
+
 for field in fields:
     df=rolling_7_avg(df,'Date','state',field)
 
-
+df['positivity']=df.positiveIncrease_avg/df.totalTestResultsIncrease_avg
 
 #CA and County Stats
-#print("Getting California county statistics...")
+print("Getting California county statistics...")
 #url='https://data.chhs.ca.gov/dataset/6882c390-b2d7-4b9a-aefa-2068cee63e47/resource/6cd8d424-dfaa-4bdd-9410-a3d656e1176e/download/covid19data.csv'
 #dfca=pd.read_csv(url,delimiter=',')
 #dfca['Date']=pd.to_datetime(dfca['Most Recent Date'], format='%m/%d/%Y')
@@ -79,6 +78,7 @@ df4=df4[['county','POPESTIMATE2019']]
 caData=caData.merge(df4, left_on='COUNTY',right_on='county')
 caData.rename(columns={"POPESTIMATE2019": "pop"},inplace=True)
 
+"""
 #Accelerated Reopening
 print("Getting accelerated reopening plans...")
 url='https://www.cdph.ca.gov/Programs/CID/DCDC/Pages/COVID-19/County_Variance_Attestation_Form.aspx'
@@ -88,6 +88,7 @@ accel_counties=[]
 for item in list:
     for i in (item.findAll("a")[0].text.replace("County","").strip().split('-')):
         accel_counties.append(i)
+"""
 
 #County Data calculated fields
 caData['hospitalized_confirmed_nonICU']=(caData['hospitalized_covid_confirmed_patients']-caData['icu_covid_confirmed_patients']).clip(0)
@@ -363,6 +364,7 @@ latestmap=animate(caData.i.max())
 latestmap.savefig("CountyMap.png")
 
 #%%
+"""
 #Accelerated Counties
 map_df['Accelerated']=map_df.NAME.isin(accel_counties)
 
@@ -380,9 +382,8 @@ ax.axis('off')
 ax.set_title('Accelerated Counties', fontdict={'fontsize': '12', 'fontweight' : '3'})
 
 fig.savefig("accelerated_counties.png")
-
-#%%
-#state compare
+"""
+#%% state compare
 fig, axs = plt.subplots(7,8)
 
 i=0
