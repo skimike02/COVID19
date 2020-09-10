@@ -308,20 +308,20 @@ shp=fileloc+'\Counties\cb_2018_us_county_500k.shp'
 map_df = gpd.read_file(shp)
 caData.sort_values(by=['County','Date'],inplace=True)
 
-def rolling_metric(metric_name,df_name,df):
-    df[metric_name] = df[df_name].diff(14)
-    mask = df['County'] != df['County'].shift(14)
+def rolling_metric(metric_name,df_name,df,days):
+    df[metric_name] = df[df_name].diff(days)
+    mask = df['County'] != df['County'].shift(days)
     df[metric_name][mask] = np.nan
     return df
 
-caData=rolling_metric('14_day_deaths','totalcountdeaths',caData)
-caData['daily deaths/100k (14-day avg)']=caData['14_day_deaths']/caData['pop']/14*100000
-caData=rolling_metric('14_day_cases','totalcountconfirmed',caData)
-caData['daily cases/100k (14-day avg)']=caData['14_day_cases']/caData['pop']/14*100000
+caData=rolling_metric('7_day_deaths','totalcountdeaths',caData,7)
+caData['daily deaths/100k (7-day avg)']=caData['7_day_deaths']/caData['pop']/7*100000
+caData=rolling_metric('7_day_cases','totalcountconfirmed',caData,7)
+caData['daily cases/100k (7-day avg)']=caData['7_day_cases']/caData['pop']/7*100000
 caData['i']=(caData.Date-caData[caData.Date>='2020-04-20'].Date.min()).dt.days
 
-data=(('daily cases/100k (14-day avg)',0,5,'Reds','Daily cases/100k (14-day avg)'),
-      ('daily deaths/100k (14-day avg)',0,0.3,'Reds','Daily deaths/100k (14-day avg)'),
+data=(('daily cases/100k (7-day avg)',0,30,'Reds','Daily cases/100k (7-day avg)'),
+      ('daily deaths/100k (7-day avg)',0,0.3,'Reds','Daily deaths/100k (7-day avg)'),
       ('ICU_usage',0,30,'Reds','% ICU usage'),
       ('hospital_usage',0,30,'Reds','% Hospital Usage'))
 
