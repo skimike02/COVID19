@@ -341,7 +341,7 @@ def animate(i):
     mapdata=caData[caData['i']==i]
     merged = map_df.merge(mapdata, how='inner', left_on="NAME", right_on="County")
     #vmin, vmax = latest[variable].min(), latest[variable].max()
-    
+
     for ax, feature in zip(axs.flatten(), data):
         # create map
         merged.plot(column=feature[0], cmap=feature[3],norm=plt.Normalize(vmin=feature[1], vmax=feature[2]), linewidth=0.8, ax=ax, edgecolor='0.8', legend=True if i==1 else "")
@@ -349,7 +349,7 @@ def animate(i):
         ax.set_title(feature[4], fontdict={'fontsize': '12', 'fontweight' : '3'})
     fig.suptitle(mapdata.Date.max().strftime('%Y-%m-%d'), y=0.92, fontsize=20)
     return fig
-    
+
 anim = FuncAnimation(fig, animate, frames=caData.i.max()+1, interval=500)
 
 class LoopingPillowWriter(PillowWriter):
